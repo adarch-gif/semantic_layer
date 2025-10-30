@@ -1,0 +1,51 @@
+bundle:
+  name: semantic-layer-quickstart
+
+vars:
+  catalog: main
+  schema_gold: invoice_gold_quickstart
+  schema_sem: invoice_semantic_quickstart
+  warehouse_name: "Starter Warehouse"
+
+workspace:
+  host: ${workspace.host}
+
+resources:
+  jobs:
+    semantic_layer_quickstart:
+      name: Semantic Layer Quickstart Deploy
+      tasks:
+        - task_key: sql_01_schemas
+          description: Create gold and semantic schemas
+          sql_task:
+            file_path: ../sql/01_schemas.sql
+            warehouse_name: ${vars.warehouse_name}
+        - task_key: sql_02_tables
+          description: Create sample fact and dimension tables
+          depends_on:
+            - sql_01_schemas
+          sql_task:
+            file_path: ../sql/02_tables.sql
+            warehouse_name: ${vars.warehouse_name}
+        - task_key: sql_03_views
+          description: Build semantic views
+          depends_on:
+            - sql_02_tables
+          sql_task:
+            file_path: ../sql/03_semantic_views.sql
+            warehouse_name: ${vars.warehouse_name}
+        - task_key: sql_04_metric_views
+          description: Publish YAML metric views
+          depends_on:
+            - sql_03_views
+          sql_task:
+            file_path: ../sql/04_metric_views.sql
+            warehouse_name: ${vars.warehouse_name}
+
+artifacts:
+  - files:
+      - ../sql/01_schemas.sql
+      - ../sql/02_tables.sql
+      - ../sql/03_semantic_views.sql
+      - ../sql/04_metric_views.sql
+      - ../docs/overview.md
